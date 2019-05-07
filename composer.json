@@ -1,0 +1,29 @@
+{
+  "name": "iamwildtuna/iml-sdk",
+  "description": "SDK для работы с API IML delivery (api.iml.ru)",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "support": {
+    "issues": "https://github.com/iamwildtuna/iml-sdk/issues",
+    "source": "https://github.com/iamwildtuna/iml-sdk"
+  },
+  "authors": [
+    {
+      "name": "Nikolay Lapay",
+      "email": "nl@wildtuna.pro",
+      "homepage": "http://wildtuna.pro",
+      "role": "Creator"
+    }
+  ],
+  "require": {
+    "php": ">=5.5",
+    "ext-json": "*",
+    "guzzlehttp/guzzle": "^6.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "WildTuna\\ImlSdk\\": "src/"
+    }
+  }
+}
+
