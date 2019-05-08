@@ -2,6 +2,8 @@
 
 namespace WildTuna\ImlSdk;
 
+use WildTuna\ImlSdk\Exception\ImlException;
+
 class Client
 {
     /** @var \GuzzleHttp\Client|null */
@@ -56,8 +58,8 @@ class Client
         if (isset($this->storage[$key]))
             throw new \InvalidArgumentException('Передананный ключ уже занят в хранилище!');
 
-        $this->storage[$key]['login'] = $login;
-        $this->storage[$key]['passwd'] = $passwd;
+        $this->storage[$key]['username'] = $login;
+        $this->storage[$key]['password'] = $passwd;
         $this->selected = $key;
     }
 
@@ -91,4 +93,308 @@ class Client
 
         $this->selected = $key;
     }
+
+    /**
+     * Инициализирует вызов к api.iml.ru
+     *
+     * @param $method
+     * @param array $params
+     * @return array
+     * @throws ImlException
+     */
+    private function callApi($method, $params = [])
+    {
+        $auth = $this->getAuthParams();
+        $response = $this->httpApi->post('/'.$method, [
+            'auth' => [$auth['username'], $auth['password']],
+            'headers' => [
+                'Accept' => 'application/json'
+            ],
+            'form_params' => $params
+        ]);
+
+        if ($response->getStatusCode() != 200)
+            throw new ImlException('Неверный код ответа от сервера IML при вызове метода '.$method.': ' . $response->getStatusCode(), $response->getStatusCode(), $response->getBody()->getContents());
+
+        $array = json_decode($response->getBody()->getContents(), true);
+
+        if (empty($array))
+            throw new ImlException('От сервера IML при вызове метода '.$method.' пришел пустой ответ', $response->getStatusCode(), $response->getBody()->getContents());
+
+        if (!empty($array['Result']) && $array['Result'] != "OK") {
+            $errors = "\n";
+            foreach ($array['Errors'] as $err) {
+                $errors .= $err['Message']."\n";
+            }
+
+            throw new ImlException('От сервера IML при вызове метода '.$method.' получены ошибки: '.$errors, $response->getStatusCode(), $response->getBody()->getContents());
+        }
+
+        return $array;
+    }
+
+    /**
+     * Инициализирует вызов к list.iml.ru
+     *
+     * @param $method
+     * @param $params
+     * @return array
+     * @throws ImlException
+     */
+    private function callList($method, $params = [])
+    {
+        $auth = $this->getAuthParams();
+        $response = $this->httpList->get('/'.$method, [
+            'auth' => [$auth['username'], $auth['password']],
+            'headers' => [
+                'Accept' => 'application/json'
+            ],
+            'query' => $params
+        ]);
+
+        if ($response->getStatusCode() != 200)
+            throw new ImlException('Неверный код ответа от сервера IML при вызове метода '.$method.': ' . $response->getStatusCode(), $response->getStatusCode(), $response->getBody()->getContents());
+
+        $array = json_decode($response->getBody()->getContents(), true);
+
+        if (empty($array))
+            throw new ImlException('От сервера IML при вызове метода '.$method.' пришел пустой ответ', $response->getStatusCode(), $response->getBody()->getContents());
+
+        return $array;
+    }
+
+    /**
+     * Получить список ограниченных ресурсов
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getResourceLimitList()
+    {
+        return $this->callList('ResourceLimit');
+    }
+
+    /**
+     * Справочник почтовых индексов
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getZipList()
+    {
+        return $this->callList('PostCode');
+    }
+
+    /**
+     * Детальная информация по почтовому индексу
+     *
+     * @param int $zip - почтовый индекс
+     * @return array
+     * @throws ImlException
+     */
+    public function getZipInfo($zip)
+    {
+        $params['index'] = $zip;
+        return $this->callList('PostCode', $params);
+    }
+
+
+    /**
+     * Справочник складов
+     *
+     * @param boolean $full - расширенная информация по складам
+     * @return array
+     * @throws ImlException
+     */
+    public function getWarehouseList($full = false)
+    {
+        $method = 'Location';
+        if ($full)
+            $method .= 'Ext';
+
+        return $this->callList($method);
+    }
+
+    /**
+     * Список регионов, где возможен самовывоз (есть ПВЗ)
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getSelfDeliveryRegions()
+    {
+        return $this->callList('SelfDeliveryRegions');
+    }
+
+
+    /**
+     * Справочник почтовых ограничений
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getPostDeliveryLimits()
+    {
+        return $this->callList('PostDeliveryLimit');
+    }
+
+    /**
+     * Справочник регионов IML
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getRegionsList()
+    {
+        return $this->callList('region');
+    }
+
+    /**
+     * Справочник пунктов самовывоза (ПВЗ)
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getPvzList()
+    {
+        return $this->callList('sd');
+    }
+
+    /**
+     * Список ПВЗ в указанном регионе
+     *
+     * @param string $region_code - код региона IML из справочника регионов (см. $this->getRegionsList)
+     * @return array
+     * @throws ImlException
+     */
+    public function getPvzInRegion($region_code)
+    {
+        $params['RegionCode'] = $region_code;
+        return $this->callList('sd', $params);
+    }
+
+    /**
+     * Список ПВЗ по коду КЛАДР
+     *
+     * @param string $kladr - код КЛАДР
+     * @return array
+     * @throws ImlException
+     */
+    public function getPvzByKladr($kladr)
+    {
+        $params['kladr'] = $kladr;
+        return $this->callList('sd', $params);
+    }
+
+    /**
+     * Все справочники одним запросом
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function allReferenceBooks()
+    {
+        return $this->callList('all');
+    }
+
+    /**
+     * Справочник услуг
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getServicesList()
+    {
+        return $this->callList('service');
+    }
+
+    /**
+     * Справочник статусов
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getStatusesList()
+    {
+        return $this->callList('status');
+    }
+
+    // TODO GlobalRouteLine
+
+    /**
+     * Справочник дополнительных зон доставки
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getAdditionalDeliveryZones()
+    {
+        return $this->callList('AdditionalDeliveryZone');
+    }
+
+    // TODO LocationResource
+
+    // TODO ExceptionServiceRegion
+
+    /**
+     * Справочник валют оценочной стоимости
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getValuationCurrencies()
+    {
+        return $this->callList('ValuationCurrency');
+    }
+
+    /**
+     * Рабочий календарь IML
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getWorkCalendarIml()
+    {
+        return $this->callList('calendar');
+    }
+
+    // TODO GlobalRouteHeader
+
+    // TODO ChangeModeWork
+
+    /**
+     * Справочник регионов и городов доставки
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getRegionsAndCities()
+    {
+        return $this->callList('RegionCity');
+    }
+
+    /**
+     * Справочник тарифных зон Почты России
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getPostTariffZones()
+    {
+        return $this->callList('PostRateZone');
+    }
+
+
+    /**
+     * Справочник единиц измерения вложений заказа
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getUnitsList()
+    {
+        return $this->callList('UnitOfMeasure');
+    }
+
+    // TODO Zone
 }
