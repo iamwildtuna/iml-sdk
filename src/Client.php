@@ -164,7 +164,7 @@ class Client
     }
 
     /**
-     * Получить список ограниченных ресурсов
+     * Справочник ограниченных ресурсов
      *
      * @return array
      * @throws ImlException
@@ -216,7 +216,7 @@ class Client
     }
 
     /**
-     * Список регионов, где возможен самовывоз (есть ПВЗ)
+     * Справочник регионов, где возможен самовывоз (есть ПВЗ)
      *
      * @return array
      * @throws ImlException
@@ -319,7 +319,29 @@ class Client
         return $this->callList('status');
     }
 
-    // TODO GlobalRouteLine
+    /**
+     * Справочник сегментов маршрутов
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getRouteSegments()
+    {
+        return $this->callList('GlobalRouteLine');
+    }
+
+    /**
+     * Получение данных сегмента маршрута по коду
+     *
+     * @param string $segment_code - код сегмента
+     * @return array
+     * @throws ImlException
+     */
+    public function getRouteSegmentByCode($segment_code = null)
+    {
+        $params['tripcode'] = $segment_code;
+        return $this->callList('GlobalRouteLine');
+    }
 
     /**
      * Справочник дополнительных зон доставки
@@ -334,7 +356,17 @@ class Client
 
     // TODO LocationResource
 
-    // TODO ExceptionServiceRegion
+
+    /**
+     * Список заблокированных регионов IML в разрезе услуг
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getBlockedRegionsList()
+    {
+        return $this->callList('ExceptionServiceRegion');
+    }
 
     /**
      * Справочник валют оценочной стоимости
@@ -396,5 +428,14 @@ class Client
         return $this->callList('UnitOfMeasure');
     }
 
-    // TODO Zone
+    /**
+     * Справочник зон доставки
+     *
+     * @return array
+     * @throws ImlException
+     */
+    public function getDeliveryZones()
+    {
+        return $this->callList('zone');
+    }
 }
