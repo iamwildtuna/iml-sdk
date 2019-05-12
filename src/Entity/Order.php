@@ -692,4 +692,20 @@ class Order
     {
         $this->draft = $draft;
     }
+
+    /**
+     * @param Item $item
+     */
+    public function setItem($item)
+    {
+        $this->items[] = $item;
+    }
+
+    /**
+     * @return array
+     */
+    public function getItems()
+    {
+        return $this->items;
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace WildTuna\ImlSdk;
 
+use WildTuna\ImlSdk\Entity\Order;
 use WildTuna\ImlSdk\Exception\ImlException;
 
 class Client
@@ -161,6 +162,74 @@ class Client
             throw new ImlException('От сервера IML при вызове метода '.$method.' пришел пустой ответ', $response->getStatusCode(), $response->getBody()->getContents());
 
         return $array;
+    }
+
+    // TODO создание заказа
+
+
+    /**
+     * Создание заказа
+     *
+     * @param Order $order - параметры заказа
+     * @return array
+     * @throws ImlException
+     */
+    public function createOrder($order)
+    {
+        $params = $order->asArr();
+        return $this->callApi('CreateOrder', $params);
+    }
+
+    /**
+     * Получить состояние заказа (статус)
+     *
+     * @param string $order_id - номер заказа ИМ
+     * @return array
+     * @throws ImlException
+     */
+    public function getOrderStatus($order_id)
+    {
+        $params['CustomerOrder'] = $order_id;
+        $result = $this->callApi('GetStatuses', $params);
+        return array_shift($result);
+    }
+
+    /**
+     * Список заказов
+     *
+     * @param string $from - период от (дата в любом формате)
+     * @param string $to - период до (дата в любом формате)
+     * @return array
+     * @throws ImlException
+     */
+    public function getOrdersList($from, $to)
+    {
+        // TODO обработка всех параметов
+
+        if (empty($from) || empty($to))
+            throw new \InvalidArgumentException('Не передан период дат');
+
+        $params['DeliveryDateStart'] = date('d.m.Y', strtotime($from));
+        $params['DeliveryDateEnd']   = date('d.m.Y', strtotime($to));
+        return $this->callApi('GetOrders', $params);
+    }
+
+    /**
+     * Печать этикетки
+     *
+     * @param $barcode
+     * @return array
+     * @throws ImlException
+     */
+    public function printLabel($barcode)
+    {
+        // TODO обработка всех параметров
+        $params['BarCode'] = $barcode;
+        $result = $this->callApi('PrintBar', $params);
+        if (empty($result['Url']))
+            throw new ImlException('От сервера IML не пришла ссылка на этикетку');
+
+        return $result['Url'];
     }
 
     /**

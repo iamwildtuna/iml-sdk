@@ -4,13 +4,17 @@
 [![Telegram Chat](https://img.shields.io/badge/telegram-chat-blue.svg?logo=telegram)](https://t.me/phpboxberrysdk)
 
 
-#SDK для [интеграции с программным комплексом IML](https://iml.ru).
+# SDK для [интеграции с программным комплексом IML](https://iml.ru).
 
 # Содержание      
 - [Changelog](#changelog)    
 - [Установка](#install)  
 - [Настройка аутентификации](#settings)  
 - [API интеграции с IML](#apiimlru)  
+  - [Создание заказа](#createOrder)    
+  - [Получить состояние заказа (статус)](#getOrderStatus)  
+  - [Список заказов](#getOrdersList)  
+  - [Печать этикетки](#printLabel)  
 - [Справочный сервис IML](#listimlru) 
   - [Справочник ограниченных ресурсов](#getResourceLimitList)  
   - [Справочник почтовых индексов](#getZipList)  
@@ -42,7 +46,8 @@
 - 0.1.0 - Cкелет SDK;  
 - 0.2.0 - Созданы сущности для работы с заказом и механизм смены учетных данных;  
 - 0.3.0 - Реализована часть функций https://list.iml.ru;
-- 0.4.0 - Реализованы функции https://list.iml.ru, добавлено [описание](README.md).  
+- 0.4.0 - Реализованы функции https://list.iml.ru, добавлено [описание](README.md);  
+- 0.5.0 - Реализованы функции https://api.iml.ru. 
 
 
 <a namje="install"><h1>Установка</h1></a>  
@@ -84,7 +89,372 @@ $imlClient->switchLogin('another');
 
 
 <a name="apiimlru"><h1>API интеграции с IML</h1></a>  
-Функции основного [API](https://api.iml.ru/) компании IML (Работа с заказами и этикетками).  
+Функции основного [API](https://api.iml.ru/) компании IML (Работа с заказами и этикетками).    
+
+
+<a name="createOrder"><h3>Создание заказа</h3></a>  
+Создание нового заказа в IML. Подробное описание свойств объекта *\WildTuna\ImlSdk\Entity\Order()* можно посмотреть [тут](src/Entity/Order.php).  
+Описание порядка заполнения полей можно посмотреть [тут](https://api.iml.ru/Help/v4/CreateOrder).      
+
+**Входные параметры:**  
+Объект *\WildTuna\ImlSdk\Entity\Order*
+ 
+**Выходные параметры:**  
+Ассоциативный массив данных
+
+**Примеры вызова:**
+```php
+<?php
+$imlClient = new \WildTuna\ImlSdk\Client();
+$imlClient->setAuthParams('main', 'api_login', 'api_password');
+
+try {
+    $order = new \WildTuna\ImlSdk\Entity\Order();
+    $order->testMod(true);
+    $order->setNumber(9999111);
+    $order->setJob('24КО');
+    $order->setDeliveryDate('2019-05-15');
+    $order->setPlaces(1);
+    $order->setWeight(1.5);
+    // $order->setBarcode(123456789);
+    $order->setPhone('89992223344');
+    $order->setEmail('test@test.ru');
+    $order->setFio('Иванов Петр');
+    $order->setZipFrom(115551);
+    $order->setZipTo(115551);
+    $order->setAddress('Красная пл. д. 1 кв. 1');
+    $order->setTimeFrom('10:00');
+    $order->setTimeTo('19:00');
+    $order->setAmount(1000);
+    $order->setValuatedAmount(1000);
+    $order->setComment('Текст комментария');
+    
+    $item = new \WildTuna\ImlSdk\Entity\Item();
+    $item->setArticul(12345);
+    $item->setName('Тестовый товар');
+    $item->setParams('красная коробка');
+    $item->setWeight(1.5);
+    $item->setAmount(1000);
+    $item->setValuatedAmount(1000);
+    $item->setVatRate(20);
+    $item->setUnit('шт.');
+    
+    $order->setItem($item);
+    
+    $result = $imlClient->createOrder($order);
+    
+    /*
+     Array
+     (
+         [Result] => OK
+         [Order] => Array
+             (
+                 [Job] => 24КО
+                 [CustomerOrder] => 9999111
+                 [DeliveryDate] => 15.05.2019 0:00:00
+                 [Volume] => 1
+                 [Weight] => 1.5
+                 [BarCode] => 7500019030317
+                 [DeliveryPoint] =>
+                 [Phone] => 89992223344
+                 [Email] => test@test.ru
+                 [Contact] => Иванов Петр
+                 [IndexTo] => 115551
+                 [IndexFrom] => 115551
+                 [RegionCodeTo] => МОСКВА
+                 [RegionCodeFrom] => МОСКВА
+                 [Address] => Красная пл. д. 1 кв. 1
+                 [TimeTo] => 19:00:00
+                 [TimeFrom] => 10:00:00
+                 [ValuatedAmount] => 1000
+                 [Amount] => 1000
+                 [State] => 999
+                 [OrderStatus] => 0
+                 [Comment] => Текст комментария
+                 [GoodItems] => Array
+                     (
+                         [0] => Array
+                             (
+                                 [productNo] => 12345
+                                 [productName] => Тестовый товар
+                                 [productVariant] => красная коробка
+                                 [productNote] => красная коробка
+                                 [productBarCode] =>
+                                 [couponCode] =>
+                                 [discount] => 0
+                                 [weightLine] =>
+                                 [amountLine] => 1000
+                                 [statisticalValueLine] => 1000
+                                 [deliveryService] => 1
+                                 [itemQuantity] => 1
+                                 [itemType] => 0
+                                 [itemNote] =>
+                                 [allowed] => True
+                                 [VATRate] => 1
+                                 [VATAmount] =>
+                                 [Length] => 0
+                                 [Height] => 0
+                                 [Width] => 0
+                                 [GoodsClass] =>
+                                 [PaymentItemUnit] => шт.
+                                 [VendorName] =>
+                                 [VendorINN] =>
+                                 [VendorPhone] =>
+                                 [PaymentItemSign] => 1
+                                 [ExciseAmount] =>
+                                 [ItemCountryOrigin] =>
+                                 [CustomsDeclaration] =>
+                             )
+     
+                     )
+     
+                 [ForLocation] => МОСКВА
+                 [Draft] =>
+                 [DeliveryAmount] =>
+                 [Commission] =>
+                 [PostIdentifier] =>
+                 [PaymentType] =>
+                 [FullDeliveryAmount] =>
+             )
+     
+     )
+     */
+}
+
+catch (\WildTuna\ImlSdk\Exception\ImlException $e) {
+    // Обработка ошибки вызова API IML
+    // $e->getMessage(); текст ошибки 
+    // $e->getCode(); http код ответа сервиса IML
+    // $e->getRawResponse(); // ответ сервиса IML как есть (http response body)
+}
+
+catch (\Exception $e) {
+    // Обработка исключения
+}
+``` 
+    
+
+
+<a name="getOrderStatus"><h3>Получить состояние заказа (статус)</h3></a>  
+Возвращает детальную информацию о состояние заказа с списком вложения.  
+
+**Входные параметры:**  
+*$order_id (string)* - номер заказа ИМ (не IML) 
+ 
+**Выходные параметры:**  
+Ассоциативный массив данных
+
+**Примеры вызова:**
+```php
+<?php
+$imlClient = new \WildTuna\ImlSdk\Client();
+$imlClient->setAuthParams('main', 'api_login', 'api_password');
+
+try {
+    $result = $imlClient->getOrderStatus(8133829);
+    /*
+     Array
+     (
+         [Number] => 8133829
+         [State] => 13
+         [OrderStatus] => 1
+         [StateDescription] => Завершено
+         [OrderStatusDescription] => Доставлен
+         [StatusDate] => 2019-05-10T08:03:09.79
+         [ReturnPayment] =>
+         [BarCode] => 6034813382910
+         [ReturnStatus] => 0
+         [CashReceiptAmount] => 4020
+         [LocationCode] =>
+         [TransferredToDate] =>
+         [Details] => Array
+             (
+                 [0] => Array
+                     (
+                         [change] => 0001-01-01T00:00:00
+                         [productNo] => 72614619
+                         [productName] => Сумка спортивная Wenger, серая/салатовая, 48х24x30 см
+                         [service] =>
+                         [isAllowed] =>
+                         [amount] => 3720
+                         [cashRecieptAmount] => 3720
+                         [cancel] =>
+                         [returnCode] =>
+                         [productVariant] =>
+                         [statisticalValueLine] => 3720
+                         [externalBarcode] => 0000000442824
+                         [couponCode] =>
+                         [productType] => 0
+                         [productTypeId] =>
+                         [status] =>
+                         [side1] =>
+                         [side2] =>
+                         [side3] =>
+                         [weight] =>
+                         [vatRate] =>
+                         [vatAmount] =>
+                         [discount] => 0
+                         [consignorPhone] =>
+                         [note] =>
+                         [quantity] => 1
+                     )
+         [DeliveryDate] => 2019-05-09T00:00:00
+         [PostIdentifier] =>
+         [PaymentType] => 0
+     )
+     */
+}
+
+catch (\WildTuna\ImlSdk\Exception\ImlException $e) {
+    // Обработка ошибки вызова API IML
+    // $e->getMessage(); текст ошибки 
+    // $e->getCode(); http код ответа сервиса IML
+    // $e->getRawResponse(); // ответ сервиса IML как есть (http response body)
+}
+
+catch (\Exception $e) {
+    // Обработка исключения
+}
+```
+
+
+<a name="getOrdersList"><h3>Список заказов</h3></a>  
+Возвращает список заказов за указанный период дат.
+
+**Входные параметры:**  
+*$from (string)* -  период от (дата в любом формате)  
+*$to (string)* -  период до (дата в любом формате)  
+ 
+**Выходные параметры:**  
+Ассоциативный массив данных
+
+**Примеры вызова:**
+```php
+<?php
+$imlClient = new \WildTuna\ImlSdk\Client();
+$imlClient->setAuthParams('main', 'api_login', 'api_password');
+
+try {
+    $result = $imlClient->getOrdersList('2019-05-01', '2019-05-01');
+    /*
+     Array
+     (
+         [0] => Array
+             (
+                 [Job] => 24КО
+                 [CustomerOrder] => 4199130
+                 [DeliveryDate] => 01.05.2019 0:00:00
+                 [Volume] => 1
+                 [Weight] => 0.7
+                 [BarCode] => 6034419913013
+                 [DeliveryPoint] =>
+                 [Phone] => 89995556677
+                 [Email] =>
+                 [Contact] => Иванов Иван
+                 [IndexTo] =>
+                 [IndexFrom] =>
+                 [RegionCodeTo] => МОСКВА
+                 [RegionCodeFrom] => МОСКВА
+                 [Address] => 115142, Москва г, Коломенская наб, дом 1, квартира 1
+                 [TimeTo] => 18:00:00
+                 [TimeFrom] => 10:00:00
+                 [ValuatedAmount] => 2838
+                 [Amount] => 2838
+                 [State] => 13
+                 [OrderStatus] => 1
+                 [Comment] =>
+                 [GoodItems] => Array
+                     (
+                         [0] => Array
+                             (
+                                 [productNo] => 702-500 АКУЛА
+                                 [productName] => Термос (сититерм-вакуумный) Арктика (0,5 литра),акула
+                                 [productVariant] =>
+                                 [productNote] =>
+                                 [productBarCode] => 2000044959065
+                                 [couponCode] =>
+                                 [discount] => 0
+                                 [weightLine] =>
+                                 [amountLine] => 1269
+                                 [statisticalValueLine] => 1269
+                                 [deliveryService] => 0
+                                 [itemQuantity] =>
+                                 [itemType] => 0
+                                 [itemNote] =>
+                                 [allowed] =>
+                                 [VATRate] =>
+                                 [VATAmount] =>
+                                 [Length] =>
+                                 [Height] =>
+                                 [Width] =>
+                                 [GoodsClass] =>
+                                 [PaymentItemUnit] =>
+                                 [VendorName] =>
+                                 [VendorINN] =>
+                                 [VendorPhone] =>
+                                 [PaymentItemSign] =>
+                                 [ExciseAmount] =>
+                                 [ItemCountryOrigin] =>
+                                 [CustomsDeclaration] =>
+                             )
+                     )
+    
+            [ForLocation] =>
+            [Draft] =>
+            [DeliveryAmount] => 255.6
+            [Commission] => 86.85
+            [PostIdentifier] =>
+            [PaymentType] => 1
+            [FullDeliveryAmount] => 255.6
+        )
+     )
+     */
+}
+
+catch (\WildTuna\ImlSdk\Exception\ImlException $e) {
+    // Обработка ошибки вызова API IML
+    // $e->getMessage(); текст ошибки 
+    // $e->getCode(); http код ответа сервиса IML
+    // $e->getRawResponse(); // ответ сервиса IML как есть (http response body)
+}
+
+catch (\Exception $e) {
+    // Обработка исключения
+}
+```
+
+
+<a name="printLabel"><h3>Печать этикетки</h3></a>  
+Возвращает ссылку на PDF-файл или PNG картинку с этикетами заказа.  
+
+**Входные параметры:**  
+*$barcode (string)* -  штрих код заказа в формате EAN-13. Существует возможность принимать несколько штрих кодов через разделитель '|' без пробелов.  
+ 
+**Выходные параметры:**  
+Ссылка на PDF-файл или PNG картинку
+
+**Примеры вызова:**
+```php
+<?php
+$imlClient = new \WildTuna\ImlSdk\Client();
+$imlClient->setAuthParams('main', 'api_login', 'api_password');
+
+try {
+    $result = $imlClient->printLabel('7500264678517'); // $result = https://api.iml.ru/PrintBar?Barcode=7500264678517
+}
+
+catch (\WildTuna\ImlSdk\Exception\ImlException $e) {
+    // Обработка ошибки вызова API IML
+    // $e->getMessage(); текст ошибки 
+    // $e->getCode(); http код ответа сервиса IML
+    // $e->getRawResponse(); // ответ сервиса IML как есть (http response body)
+}
+
+catch (\Exception $e) {
+    // Обработка исключения
+}
+```
+
 
 
 
