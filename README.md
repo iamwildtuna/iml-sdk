@@ -53,7 +53,7 @@
 <a namje="install"><h1>Установка</h1></a>  
 Для установки можно использовать менеджер пакетов Composer
 
-    composer require iamwildtuna/iml-sdk
+    composer require wildtuna/iml-sdk
     
 
 <a name="termins"><h1>Термины и обознаения</h1></a>  
