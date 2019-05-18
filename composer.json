@@ -1,5 +1,5 @@
 {
-  "name": "iamwildtuna/iml-sdk",
+  "name": "wildtuna/iml-sdk",
   "description": "SDK для работы с API IML delivery (api.iml.ru)",
   "minimum-stability": "stable",
   "license": "MIT",
