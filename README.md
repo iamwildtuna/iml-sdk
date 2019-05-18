@@ -1,6 +1,6 @@
-[![Latest Stable Version](https://poser.pugx.org/iamwildtuna/iml-sdk/v/stable)](https://packagist.org/packages/iamwildtuna/iml-sdk)
-[![Total Downloads](https://poser.pugx.org/iamwildtuna/iml-sdk/downloads)](https://packagist.org/packages/iamwildtuna/iml-sdk)
-[![License](https://poser.pugx.org/iamwildtuna/iml-sdk/license)](https://packagist.org/packages/iamwildtuna/iml-sdk)
+[![Latest Stable Version](https://poser.pugx.org/wildtuna/iml-sdk/v/stable)](https://packagist.org/packages/wildtuna/iml-sdk)
+[![Total Downloads](https://poser.pugx.org/wildtuna/iml-sdk/downloads)](https://packagist.org/packages/wildtuna/iml-sdk)
+[![License](https://poser.pugx.org/wildtuna/iml-sdk/license)](https://packagist.org/packages/wildtuna/iml-sdk)
 [![Telegram Chat](https://img.shields.io/badge/telegram-chat-blue.svg?logo=telegram)](https://t.me/phpboxberrysdk)
 
 
