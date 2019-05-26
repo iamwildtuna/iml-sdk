@@ -6,6 +6,8 @@
 
 # SDK для [интеграции с программным комплексом IML](https://iml.ru).
 
+Посмотреть все проекты или поддержать автора можно [тут](https://lapay.group/opensource).
+
 # Содержание      
 - [Changelog](#changelog)    
 - [Установка](#install)  
