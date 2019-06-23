@@ -52,7 +52,7 @@
 - 0.5.0 - Реализованы функции https://api.iml.ru. 
 
 
-<a namje="install"><h1>Установка</h1></a>  
+<a name="install"><h1>Установка</h1></a>  
 Для установки можно использовать менеджер пакетов Composer
 
     composer require wildtuna/iml-sdk
