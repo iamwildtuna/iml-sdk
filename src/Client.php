@@ -2,11 +2,15 @@
 
 namespace WildTuna\ImlSdk;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use WildTuna\ImlSdk\Entity\Order;
 use WildTuna\ImlSdk\Exception\ImlException;
 
-class Client
+class Client implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /** @var \GuzzleHttp\Client|null */
     private $httpApi = null;
 
@@ -105,6 +109,10 @@ class Client
      */
     private function callApi($method, $params = [])
     {
+        if ($this->logger) {
+            $this->logger->info('IML API request: '.http_build_query($params));
+        }
+
         $auth = $this->getAuthParams();
         $response = $this->httpApi->post('/'.$method, [
             'auth' => [$auth['username'], $auth['password']],
@@ -114,13 +122,19 @@ class Client
             'form_params' => $params
         ]);
 
-        if ($response->getStatusCode() != 200)
-            throw new ImlException('Неверный код ответа от сервера IML при вызове метода '.$method.': ' . $response->getStatusCode(), $response->getStatusCode(), $response->getBody()->getContents());
+        $json = $response->getBody()->getContents();
 
-        $array = json_decode($response->getBody()->getContents(), true);
+        if ($this->logger) {
+            $this->logger->info('IML API response: '.$json);
+        }
+
+        if ($response->getStatusCode() != 200)
+            throw new ImlException('Неверный код ответа от сервера IML при вызове метода '.$method.': ' . $response->getStatusCode(), $response->getStatusCode(), $json);
+
+        $array = json_decode($json, true);
 
         if (empty($array))
-            throw new ImlException('От сервера IML при вызове метода '.$method.' пришел пустой ответ', $response->getStatusCode(), $response->getBody()->getContents());
+            throw new ImlException('От сервера IML при вызове метода '.$method.' пришел пустой ответ', $response->getStatusCode(), $json);
 
         if (!empty($array['Result']) && $array['Result'] != "OK") {
             $errors = "\n";
@@ -128,7 +142,7 @@ class Client
                 $errors .= $err['Message']."\n";
             }
 
-            throw new ImlException('От сервера IML при вызове метода '.$method.' получены ошибки: '.$errors, $response->getStatusCode(), $response->getBody()->getContents());
+            throw new ImlException('От сервера IML при вызове метода '.$method.' получены ошибки: '.$errors, $response->getStatusCode(), $json);
         }
 
         return $array;
@@ -144,6 +158,10 @@ class Client
      */
     private function callList($method, $params = [])
     {
+        if ($this->logger) {
+            $this->logger->info('IML API request: '.http_build_query($params));
+        }
+
         $auth = $this->getAuthParams();
         $response = $this->httpList->get('/'.$method, [
             'auth' => [$auth['username'], $auth['password']],
@@ -153,19 +171,22 @@ class Client
             'query' => $params
         ]);
 
-        if ($response->getStatusCode() != 200)
-            throw new ImlException('Неверный код ответа от сервера IML при вызове метода '.$method.': ' . $response->getStatusCode(), $response->getStatusCode(), $response->getBody()->getContents());
+        $json = $response->getBody()->getContents();
 
-        $array = json_decode($response->getBody()->getContents(), true);
+        if ($this->logger) {
+            $this->logger->info('IML API response: '.$json);
+        }
+
+        if ($response->getStatusCode() != 200)
+            throw new ImlException('Неверный код ответа от сервера IML при вызове метода '.$method.': ' . $response->getStatusCode(), $response->getStatusCode(), $json);
+
+        $array = json_decode($json, true);
 
         if (empty($array))
-            throw new ImlException('От сервера IML при вызове метода '.$method.' пришел пустой ответ', $response->getStatusCode(), $response->getBody()->getContents());
+            throw new ImlException('От сервера IML при вызове метода '.$method.' пришел пустой ответ', $response->getStatusCode(), $json);
 
         return $array;
     }
-
-    // TODO создание заказа
-
 
     /**
      * Создание заказа

@@ -12,6 +12,7 @@
 - [Changelog](#changelog)    
 - [Установка](#install)  
 - [Настройка аутентификации](#settings)  
+- [Отладка](#debugging)  
 - [API интеграции с IML](#apiimlru)  
   - [Создание заказа](#createOrder)    
   - [Получить состояние заказа (статус)](#getOrderStatus)  
@@ -89,6 +90,26 @@ $imlClient->switchLogin('main');
 $imlClient->switchLogin('another');
 ````    
 
+
+<a name="debugging"><h1>Отладка</h1></a>  
+Для логирования запросов и ответов используется [стандартный PSR-3 логгер](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md). 
+Ниже приведен пример логирования используя [Monolog](https://github.com/Seldaek/monolog).  
+
+```php
+<?php
+    use Monolog\Logger;
+    use Monolog\Handler\StreamHandler;
+    
+    $log = new Logger('name');
+    $log->pushHandler(new StreamHandler('log.txt', Logger::INFO));
+    
+    $imlClient = new \WildTuna\ImlSdk\Client();
+    $imlClient->setAuthParams('main', 'api_login', 'api_password');
+    $imlClient->setLogger($log);
+    $result = $imlClient->getPvzList();
+```  
+
+Запрос и ответ будут в файле log.txt.
 
 <a name="apiimlru"><h1>API интеграции с IML</h1></a>  
 Функции основного [API](https://api.iml.ru/) компании IML (Работа с заказами и этикетками).    
