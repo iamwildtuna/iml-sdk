@@ -109,8 +109,10 @@ class Client implements LoggerAwareInterface
      */
     private function callApi($method, $params = [])
     {
+        $request = http_build_query($params);
+
         if ($this->logger) {
-            $this->logger->info('IML API request: '.http_build_query($params));
+            $this->logger->info("IML API POST request /json/{$method}: ".$request);
         }
 
         $auth = $this->getAuthParams();
@@ -125,16 +127,18 @@ class Client implements LoggerAwareInterface
         $json = $response->getBody()->getContents();
 
         if ($this->logger) {
-            $this->logger->info('IML API response: '.$json);
+            $headers = $response->getHeaders();
+            $headers['http_status'] = $response->getStatusCode();
+            $this->logger->info("IML API response /json/{$method}: ".$json, $headers);
         }
 
         if ($response->getStatusCode() != 200)
-            throw new ImlException('Неверный код ответа от сервера IML при вызове метода '.$method.': ' . $response->getStatusCode(), $response->getStatusCode(), $json);
+            throw new ImlException('Неверный код ответа от сервера IML при вызове метода '.$method.': ' . $response->getStatusCode(), $response->getStatusCode(), $json, $request);
 
         $array = json_decode($json, true);
 
         if (empty($array))
-            throw new ImlException('От сервера IML при вызове метода '.$method.' пришел пустой ответ', $response->getStatusCode(), $json);
+            throw new ImlException('От сервера IML при вызове метода '.$method.' пришел пустой ответ', $response->getStatusCode(), $json, $request);
 
         if (!empty($array['Result']) && $array['Result'] != "OK") {
             $errors = "\n";
@@ -142,7 +146,7 @@ class Client implements LoggerAwareInterface
                 $errors .= $err['Message']."\n";
             }
 
-            throw new ImlException('От сервера IML при вызове метода '.$method.' получены ошибки: '.$errors, $response->getStatusCode(), $json);
+            throw new ImlException('От сервера IML при вызове метода '.$method.' получены ошибки: '.$errors, $response->getStatusCode(), $json, $request);
         }
 
         return $array;
@@ -158,8 +162,10 @@ class Client implements LoggerAwareInterface
      */
     private function callList($method, $params = [])
     {
+        $request = http_build_query($params);
+
         if ($this->logger) {
-            $this->logger->info('IML API request: '.http_build_query($params));
+            $this->logger->info("IML API GET request /{$method}: ".$request);
         }
 
         $auth = $this->getAuthParams();
@@ -174,16 +180,18 @@ class Client implements LoggerAwareInterface
         $json = $response->getBody()->getContents();
 
         if ($this->logger) {
-            $this->logger->info('IML API response: '.$json);
+            $headers = $response->getHeaders();
+            $headers['http_status'] = $response->getStatusCode();
+            $this->logger->info("IML API response /{$method}: ".$json, $headers);
         }
 
         if ($response->getStatusCode() != 200)
-            throw new ImlException('Неверный код ответа от сервера IML при вызове метода '.$method.': ' . $response->getStatusCode(), $response->getStatusCode(), $json);
+            throw new ImlException('Неверный код ответа от сервера IML при вызове метода '.$method.': ' . $response->getStatusCode(), $response->getStatusCode(), $json, $request);
 
         $array = json_decode($json, true);
 
         if (empty($array))
-            throw new ImlException('От сервера IML при вызове метода '.$method.' пришел пустой ответ', $response->getStatusCode(), $json);
+            throw new ImlException('От сервера IML при вызове метода '.$method.' пришел пустой ответ', $response->getStatusCode(), $json, $request);
 
         return $array;
     }

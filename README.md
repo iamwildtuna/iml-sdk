@@ -1,3 +1,8 @@
+<a href="https://lapay.group/"><img align="left" width="200" src="https://lapay.group/lglogo.jpg"></a>
+<a href="https://api.iml.ru/"><img align="right" width="200" src="https://lapay.group/imllogo.png"></a>    
+
+<br /><br /><br />
+
 [![Latest Stable Version](https://poser.pugx.org/wildtuna/iml-sdk/v/stable)](https://packagist.org/packages/wildtuna/iml-sdk)
 [![Total Downloads](https://poser.pugx.org/wildtuna/iml-sdk/downloads)](https://packagist.org/packages/wildtuna/iml-sdk)
 [![License](https://poser.pugx.org/wildtuna/iml-sdk/license)](https://packagist.org/packages/wildtuna/iml-sdk)
@@ -48,10 +53,11 @@
 
 - 0.1.0 - Cкелет SDK;  
 - 0.2.0 - Созданы сущности для работы с заказом и механизм смены учетных данных;  
-- 0.3.0 - Реализована часть функций https://list.iml.ru;
+- 0.3.0 - Реализована часть функций https://list.iml.ru;  
 - 0.4.0 - Реализованы функции https://list.iml.ru, добавлено [описание](README.md);  
 - 0.5.0 - Реализованы функции https://api.iml.ru;  
-- 0.6.0 - Добавлено логирование запросов и ответов к API.  
+- 0.6.0 - Добавлено логирование запросов и ответов к API;  
+- 0.6.1 - Доработка логирования.  
 
 
 <a name="install"><h1>Установка</h1></a>  
